@@ -96,7 +96,7 @@ export function SearchResult({ result }: SearchResultProps) {
             {result.originalQuery && (
               <li className="flex items-start space-x-2">
                 <span className="text-muted-foreground">•</span>
-                <span>Closest example: "{result.originalQuery}"</span>
+                <span>Closest example: &ldquo;{result.originalQuery}&rdquo;</span>
               </li>
             )}
             <li className="flex items-start space-x-2">

@@ -58,9 +58,9 @@ export default function Home() {
   }
 
   const exampleQueries = [
-    "Ensure all rivalry games are scheduled on weekends and broadcast on ESPN",
-    "Limit FOX to maximum 2 games in primetime slots",
-    "Ensure Lakers have at least 2 rest days between back-to-back games"
+    'Ensure all rivalry games are scheduled on weekends and broadcast on ESPN',
+    'Limit FOX to maximum 2 games in primetime slots',
+    'Ensure Lakers have at least 2 rest days between back-to-back games'
   ]
 
   return (
