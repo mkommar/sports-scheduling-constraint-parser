@@ -275,6 +275,11 @@ Don't forget to:
 
 ### Manual Testing
 
+Login with the demo Vercel URL:
+URL: https://sports-scheduling-constraint-parser-dun.vercel.app/
+Username: mahesh.kommareddi+vendor@gmail.com
+Password: r'24L.Ug6tsvQ?z
+
 Try these example queries:
 
 1. **Game Scheduling**:
