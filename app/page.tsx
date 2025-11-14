@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Navbar } from "@/components/navbar"
 import { SearchInput } from "@/components/search-input"
 import { SearchResult } from "@/components/search-result"
+import { AuthGate } from "@/components/auth/auth-gate"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Sparkles } from "lucide-react"
@@ -64,10 +65,11 @@ export default function Home() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <Navbar />
-      
-      <main className="container mx-auto px-4 py-12">
+    <AuthGate>
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+        <Navbar />
+        
+        <main className="container mx-auto px-4 py-12">
         {/* Hero Section */}
         <div className="text-center space-y-6 mb-12">
           <div className="flex items-center justify-center space-x-2">
@@ -140,6 +142,7 @@ export default function Home() {
         )}
       </main>
     </div>
+    </AuthGate>
   )
 }
 
