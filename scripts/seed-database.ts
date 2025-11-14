@@ -11,11 +11,8 @@
  *   curl -X POST http://localhost:3000/api/seed
  */
 
-import { config } from 'dotenv'
-import { resolve } from 'path'
-
-// Load environment variables
-config({ path: resolve(__dirname, '../.env.local') })
+// Note: This script is designed to call the API endpoint
+// Make sure your dev server is running: npm run dev
 
 async function seedDatabase() {
   try {
@@ -34,13 +31,13 @@ async function seedDatabase() {
     console.log(`📊 Seeded ${result.count} example queries`)
   } catch (error) {
     console.error('❌ Error seeding database:', error)
+    console.error('💡 Make sure your dev server is running: npm run dev')
     process.exit(1)
   }
 }
 
-if (require.main === module) {
-  seedDatabase()
-}
+// Uncomment to run directly with ts-node:
+// seedDatabase()
 
 export { seedDatabase }
 
