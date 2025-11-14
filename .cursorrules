@@ -1,0 +1,315 @@
+# Cursor AI Rules for Sports Scheduling Constraint Parser
+
+## Project Context
+This is a Next.js 14 application that parses natural language sports scheduling queries into structured constraints using a three-stage ML pipeline.
+
+## Code Style
+
+### TypeScript
+- Use TypeScript strict mode (already enabled in tsconfig.json)
+- Always define proper types and interfaces
+- Avoid `any` type unless absolutely necessary
+- Use type imports when importing types: `import type { Type } from '...'`
+
+### React/Next.js
+- Use functional components with hooks
+- Prefer "use client" directive for client components
+- Keep server components server-side when possible
+- Use Next.js 14 App Router patterns
+
+### Naming Conventions
+- Components: PascalCase (e.g., `SearchInput.tsx`)
+- Files: kebab-case (e.g., `search-input.tsx`)
+- Functions: camelCase (e.g., `generateEmbedding`)
+- Constants: UPPER_SNAKE_CASE (e.g., `API_BASE_URL`)
+- Types/Interfaces: PascalCase (e.g., `ParseResult`)
+
+### Component Structure
+```typescript
+"use client" // if needed
+
+import { ... } from '...'
+import type { ... } from '...'
+
+interface ComponentProps {
+  // props
+}
+
+export function Component({ prop }: ComponentProps) {
+  // hooks
+  // handlers
+  // render
+}
+```
+
+## File Organization
+
+### When creating new files:
+- UI components → `components/`
+- UI primitives (shadcn) → `components/ui/`
+- API routes → `app/api/[route]/route.ts`
+- Utilities → `lib/`
+- Types → `types/`
+- Tests → same directory with `.test.ts` suffix
+
+### Import order:
+1. React/Next.js imports
+2. Third-party libraries
+3. Local components
+4. Local utilities
+5. Types
+6. Styles
+
+## OpenAI Integration
+
+### When modifying OpenAI calls:
+- Use `text-embedding-3-small` for embeddings (cost-effective)
+- Use `gpt-4o-mini` for LLM tasks (fast, cheap)
+- Always use `response_format: { type: 'json_object' }` for structured output
+- Set temperature between 0.2-0.4 for extraction tasks
+- Handle errors gracefully with fallbacks
+
+### Example:
+```typescript
+const response = await openai.chat.completions.create({
+  model: 'gpt-4o-mini',
+  messages: [...],
+  response_format: { type: 'json_object' },
+  temperature: 0.3,
+})
+```
+
+## Supabase Integration
+
+### When working with Supabase:
+- Use `createServerSupabaseClient()` in API routes (service role)
+- Use `supabase` client in client components (anon key)
+- Always handle errors from Supabase calls
+- Use RPC functions for complex queries (e.g., `match_templates`)
+
+### Vector search pattern:
+```typescript
+const { data, error } = await supabase.rpc('match_templates', {
+  query_embedding: embedding,
+  match_threshold: 0.5,
+  match_count: 3
+})
+```
+
+## shadcn/ui Components
+
+### When adding new UI components:
+- Copy from shadcn/ui documentation
+- Place in `components/ui/`
+- Import from `@/components/ui/[component]`
+- Use `cn()` utility for className merging
+- Maintain accessibility (ARIA labels, keyboard nav)
+
+### Example:
+```typescript
+import { Button } from "@/components/ui/button"
+
+<Button variant="outline" size="sm">
+  Click me
+</Button>
+```
+
+## API Routes
+
+### API route structure:
+```typescript
+import { NextRequest, NextResponse } from 'next/server'
+
+export async function POST(request: NextRequest) {
+  try {
+    const { param } = await request.json()
+    
+    // Validation
+    if (!param) {
+      return NextResponse.json(
+        { error: 'Param is required' },
+        { status: 400 }
+      )
+    }
+    
+    // Logic
+    const result = await someOperation(param)
+    
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error('Error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+## Error Handling
+
+### Always handle errors:
+- Try-catch blocks for async operations
+- Provide user-friendly error messages
+- Log errors to console (future: use logging service)
+- Return appropriate HTTP status codes
+
+### Example:
+```typescript
+try {
+  const result = await riskyOperation()
+} catch (error) {
+  console.error('Operation failed:', error)
+  return { error: 'User-friendly message' }
+}
+```
+
+## Environment Variables
+
+### Rules:
+- Never commit `.env.local`
+- Use `NEXT_PUBLIC_` prefix for client-side vars
+- Keep API keys server-side only
+- Validate env vars at startup:
+
+```typescript
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error('Missing env.OPENAI_API_KEY')
+}
+```
+
+## Testing (Future)
+
+### When writing tests:
+- Unit tests: `[file].test.ts`
+- Integration tests: `[file].integration.test.ts`
+- E2E tests: `e2e/[feature].spec.ts`
+- Use descriptive test names
+- Test happy path and edge cases
+
+## Performance
+
+### Optimization guidelines:
+- Minimize client-side JavaScript
+- Use Server Components when possible
+- Lazy load heavy components
+- Cache frequently accessed data (future)
+- Monitor API costs (OpenAI)
+
+## Documentation
+
+### When adding features:
+- Update README.md with new features
+- Add JSDoc comments to complex functions
+- Update ARCHITECTURE.md for architectural changes
+- Add examples to TESTING.md for testable features
+
+### JSDoc example:
+```typescript
+/**
+ * Generates an embedding for the given text using OpenAI.
+ * 
+ * @param text - The text to embed
+ * @returns Array of 1536 numbers representing the embedding
+ * @throws Error if OpenAI API call fails
+ */
+export async function generateEmbedding(text: string): Promise<number[]> {
+  // implementation
+}
+```
+
+## Git Commit Messages
+
+### Format:
+```
+<type>: <short description>
+
+<optional longer description>
+```
+
+### Types:
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `style`: Code style changes (formatting)
+- `refactor`: Code refactoring
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks
+
+### Examples:
+```
+feat: add parameter expansion accordion
+
+fix: handle empty query error gracefully
+
+docs: update SETUP.md with troubleshooting section
+```
+
+## Security
+
+### Security checklist:
+- [ ] API keys only in server-side code
+- [ ] Environment variables for secrets
+- [ ] Input validation on all API routes
+- [ ] RLS enabled on Supabase tables
+- [ ] HTTPS only in production
+- [ ] Rate limiting (future)
+
+## Deployment
+
+### Before deploying:
+1. Test locally with `npm run dev`
+2. Build successfully with `npm run build`
+3. Check for linting errors with `npm run lint`
+4. Verify all env vars are set in Vercel
+5. Test in production after deployment
+
+## AI Assistant Guidelines
+
+### When suggesting code:
+1. Follow the patterns established in this codebase
+2. Use TypeScript with proper types
+3. Match the existing code style
+4. Consider performance implications
+5. Include error handling
+6. Add helpful comments for complex logic
+7. Suggest tests when appropriate
+
+### When debugging:
+1. Check browser console for errors
+2. Check Next.js terminal for server errors
+3. Verify environment variables are set
+4. Check Supabase dashboard for database issues
+5. Verify OpenAI API key is valid
+
+## Common Patterns
+
+### Adding a new constraint template:
+1. Edit `lib/templates.ts` → add to `constraintTemplates` array
+2. Update `lib/openai.ts` → adjust system prompt if needed
+3. Update `lib/feasibility.ts` → add template-specific rules
+4. Run `curl -X POST http://localhost:3000/api/seed` to reseed
+
+### Adding a new UI component:
+1. Create in `components/[name].tsx`
+2. Import shadcn/ui primitives as needed
+3. Use `"use client"` if stateful
+4. Export named export (not default)
+5. Import in `app/page.tsx` or parent component
+
+### Adding a new API endpoint:
+1. Create `app/api/[route]/route.ts`
+2. Export HTTP method handlers (GET, POST, etc.)
+3. Add input validation
+4. Add error handling
+5. Return JSON with `NextResponse.json()`
+
+## Questions?
+
+Refer to:
+- [README.md](./README.md) - Project overview
+- [SETUP.md](./SETUP.md) - Quick start
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - Technical details
+- [TESTING.md](./TESTING.md) - Testing guide
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - Deployment instructions
+
