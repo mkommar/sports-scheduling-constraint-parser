@@ -3,25 +3,30 @@
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, Loader2 } from "lucide-react"
+import { Search, Loader2, Settings2 } from "lucide-react"
 
 interface SearchInputProps {
-  onSearch: (query: string) => void
+  onSearch: (query: string, model: string) => void
+  onModelChange?: (model: string) => void
   loading?: boolean
 }
 
-export function SearchInput({ onSearch, loading }: SearchInputProps) {
+const DEFAULT_MODEL = "anthropic/claude-opus-4.5"
+
+export function SearchInput({ onSearch, onModelChange, loading }: SearchInputProps) {
   const [query, setQuery] = useState("")
+  const [model, setModel] = useState(DEFAULT_MODEL)
+  const [showModelInput, setShowModelInput] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (query.trim()) {
-      onSearch(query)
+      onSearch(query, model)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-3xl mx-auto">
+    <form onSubmit={handleSubmit} className="w-full max-w-3xl mx-auto space-y-3">
       <div className="relative">
         <Input
           type="text"
@@ -47,6 +52,55 @@ export function SearchInput({ onSearch, loading }: SearchInputProps) {
           )}
         </Button>
       </div>
+      
+      {/* Model Picker Toggle */}
+      <div className="flex items-center justify-center gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowModelInput(!showModelInput)}
+          className="text-xs text-muted-foreground hover:text-foreground"
+        >
+          <Settings2 className="h-3 w-3 mr-1" />
+          {showModelInput ? "Hide Model Settings" : "Change Model"}
+        </Button>
+        {!showModelInput && (
+          <span className="text-xs text-muted-foreground">
+            Using: <code className="bg-muted px-1 py-0.5 rounded">{model}</code>
+          </span>
+        )}
+      </div>
+
+      {/* Model Input */}
+      {showModelInput && (
+        <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
+          <label htmlFor="model-input" className="text-sm font-medium whitespace-nowrap">
+            Model:
+          </label>
+          <Input
+            id="model-input"
+            type="text"
+            placeholder="e.g., anthropic/claude-opus-4.5, openai/gpt-4o"
+            value={model}
+            onChange={(e) => {
+              setModel(e.target.value)
+              onModelChange?.(e.target.value)
+            }}
+            className="h-9 text-sm font-mono"
+            disabled={loading}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setModel(DEFAULT_MODEL)}
+            className="whitespace-nowrap text-xs"
+          >
+            Reset
+          </Button>
+        </div>
+      )}
     </form>
   )
 }

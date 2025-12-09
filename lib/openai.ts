@@ -17,7 +17,16 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   return response.data[0].embedding
 }
 
-export async function extractParameters(query: string, templateType: number) {
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+const DEFAULT_MODEL = "anthropic/claude-opus-4.5"
+
+export async function extractParameters(query: string, templateType: number, model?: string) {
+  const selectedModel = model || DEFAULT_MODEL
+  if (!OPENROUTER_API_KEY) {
+    throw new Error('Missing env.OPENROUTER_API_KEY')
+  }
+
   const systemPrompt = `You are a sports scheduling constraint parameter extractor. Extract parameters from the user's query based on the template type.
 
 Template 1: Game Scheduling
@@ -44,17 +53,46 @@ Handle negations: "don't", "no", "avoid" → set max=0
 
 Return ONLY valid JSON with extracted parameters. Use null for missing values.`
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Query: "${query}"\nTemplate Type: ${templateType}` }
-    ],
-    response_format: { type: 'json_object' },
-    temperature: 0.3,
+  const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'http://localhost',
+    },
+    body: JSON.stringify({
+      model: selectedModel,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Query: "${query}"\nTemplate Type: ${templateType}` }
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 1.0,
+    }),
   })
 
-  const content = response.choices[0].message.content
+  const responseJson = await response.json()
+
+  if (responseJson.error) {
+    console.error('OpenRouter API error:', responseJson.error)
+    throw new Error(`OpenRouter API error: ${responseJson.error.message || 'Unknown error'}`)
+  }
+
+  let content = responseJson.choices[0].message.content
+  
+  if (content) {
+    content = content.trim()
+    if (content.startsWith('```json')) {
+      content = content.slice(7)
+    } else if (content.startsWith('```')) {
+      content = content.slice(3)
+    }
+    if (content.endsWith('```')) {
+      content = content.slice(0, -3)
+    }
+    content = content.trim()
+  }
+  
   return content ? JSON.parse(content) : {}
 }
 

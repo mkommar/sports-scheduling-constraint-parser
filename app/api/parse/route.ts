@@ -6,7 +6,7 @@ import { checkFeasibility } from '@/lib/feasibility'
 
 export async function POST(request: NextRequest) {
   try {
-    const { query } = await request.json()
+    const { query, model } = await request.json()
 
     if (!query || typeof query !== 'string') {
       return NextResponse.json(
@@ -14,6 +14,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Use provided model or default
+    const selectedModel = model || 'anthropic/claude-opus-4.5'
 
     // STAGE 1: Template Classification (Vector Search)
     const embedding = await generateEmbedding(query)
@@ -31,7 +34,7 @@ export async function POST(request: NextRequest) {
       const templateId = 1
       const confidence = 0.75
       
-      const params = await extractParameters(query, templateId)
+      const params = await extractParameters(query, templateId, selectedModel)
       const constraintSentence = generateConstraintSentence(templateId, params)
       const feasibility = checkFeasibility(templateId, params)
       
@@ -59,7 +62,7 @@ export async function POST(request: NextRequest) {
     const confidence = bestMatch.similarity
 
     // STAGE 2: Parameter Extraction (LLM)
-    const params = await extractParameters(query, templateId)
+    const params = await extractParameters(query, templateId, selectedModel)
 
     // STAGE 3: Feasibility Warning (Rule-based)
     const feasibility = checkFeasibility(templateId, params)
@@ -79,6 +82,7 @@ export async function POST(request: NextRequest) {
       feasibility,
       matchReason: `Semantic similarity: ${(confidence * 100).toFixed(0)}%`,
       originalQuery: bestMatch.content,
+      model: selectedModel,
     })
 
   } catch (error) {
