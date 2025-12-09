@@ -78,5 +78,6 @@ Return ONLY valid JSON with extracted parameters. Use null for missing values.`
   }
 
   const content = responseJson.choices[0].message.content
+  console.log(content)
   return content ? JSON.parse(content) : {}
 }
