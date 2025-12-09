@@ -77,7 +77,20 @@ Return ONLY valid JSON with extracted parameters. Use null for missing values.`
     throw new Error(`OpenRouter API error: ${responseJson.error.message || 'Unknown error'}`)
   }
 
-  const content = responseJson.choices[0].message.content
-  console.log(content)
+  let content = responseJson.choices[0].message.content
+  
+  if (content) {
+    content = content.trim()
+    if (content.startsWith('```json')) {
+      content = content.slice(7)
+    } else if (content.startsWith('```')) {
+      content = content.slice(3)
+    }
+    if (content.endsWith('```')) {
+      content = content.slice(0, -3)
+    }
+    content = content.trim()
+  }
+  
   return content ? JSON.parse(content) : {}
 }
