@@ -52,7 +52,7 @@ Return ONLY valid JSON with extracted parameters. Use null for missing values.`
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `Query: "${query}"\nTemplate Type: ${templateType}` }
       ],
-      response_format: { type: 'json_object' }
+      response_format: { type: 'json_object' },
     }),
   })
   const responseJson = await response.json()
