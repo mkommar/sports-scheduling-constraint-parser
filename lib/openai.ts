@@ -95,4 +95,3 @@ Return ONLY valid JSON with extracted parameters. Use null for missing values.`
   
   return content ? JSON.parse(content) : {}
 }
-
