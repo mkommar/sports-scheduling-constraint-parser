@@ -19,9 +19,10 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-const OPENROUTER_MODEL = "anthropic/claude-opus-4.5"
+const DEFAULT_MODEL = "anthropic/claude-opus-4.5"
 
-export async function extractParameters(query: string, templateType: number) {
+export async function extractParameters(query: string, templateType: number, model?: string) {
+  const selectedModel = model || DEFAULT_MODEL
   if (!OPENROUTER_API_KEY) {
     throw new Error('Missing env.OPENROUTER_API_KEY')
   }
@@ -60,7 +61,7 @@ Return ONLY valid JSON with extracted parameters. Use null for missing values.`
       'HTTP-Referer': 'http://localhost',
     },
     body: JSON.stringify({
-      model: OPENROUTER_MODEL,
+      model: selectedModel,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `Query: "${query}"\nTemplate Type: ${templateType}` }

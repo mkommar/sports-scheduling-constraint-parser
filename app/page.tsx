@@ -30,7 +30,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = async (query: string, model: string) => {
     setLoading(true)
     setError(null)
     
@@ -40,7 +40,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, model }),
       })
 
       if (!response.ok) {
@@ -58,11 +58,17 @@ export default function Home() {
     }
   }
 
+  const [currentModel, setCurrentModel] = useState("anthropic/claude-opus-4.5")
+
   const exampleQueries = [
     'Ensure all rivalry games are scheduled on weekends and broadcast on ESPN',
     'Limit FOX to maximum 2 games in primetime slots',
     'Ensure Lakers have at least 2 rest days between back-to-back games'
   ]
+
+  const handleExampleClick = (query: string) => {
+    handleSearch(query, currentModel)
+  }
 
   return (
     <AuthGate>
@@ -89,7 +95,11 @@ export default function Home() {
 
         {/* Search Section */}
         <div className="mb-8">
-          <SearchInput onSearch={handleSearch} loading={loading} />
+          <SearchInput 
+            onSearch={handleSearch} 
+            onModelChange={setCurrentModel}
+            loading={loading} 
+          />
         </div>
 
         {/* Example Queries */}
@@ -102,7 +112,7 @@ export default function Home() {
                   key={idx}
                   variant="outline"
                   size="sm"
-                  onClick={() => handleSearch(query)}
+                  onClick={() => handleExampleClick(query)}
                   className="text-xs"
                 >
                   {query}
